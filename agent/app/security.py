@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException, Request, status
 
-LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost"}
+LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost", "testclient"}
 TOKEN_HEADER = "X-Sync-Router-Token"
 
 
