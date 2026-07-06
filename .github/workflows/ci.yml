@@ -34,5 +34,7 @@ jobs:
           node-version: '20'
       - name: Install extension dependencies
         run: npm install
+      - name: Run extension tests
+        run: npm run test
       - name: Type check the extension
         run: npm run check

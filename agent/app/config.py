@@ -16,6 +16,21 @@ class AppConfig:
     shared_secret: str = ""
     stable_delay_seconds: int = 2
     dedupe_window_seconds: int = 15
+    enable_worker: bool = True
+    worker_interval_seconds: float = 1.0
+
+
+def _parse_bool(value: object, default: bool) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    return default
 
 
 def load_config(config_path: str | Path | None = None) -> AppConfig:
@@ -35,6 +50,8 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
     shared_secret = os.environ.get("SYNC_ROUTER_SHARED_SECRET", str(raw.get("shared_secret", "")))
     stable_delay_seconds = int(os.environ.get("SYNC_ROUTER_STABLE_DELAY_SECONDS", raw.get("stable_delay_seconds", 2)))
     dedupe_window_seconds = int(os.environ.get("SYNC_ROUTER_DEDUPE_WINDOW_SECONDS", raw.get("dedupe_window_seconds", 15)))
+    enable_worker = _parse_bool(os.environ.get("SYNC_ROUTER_ENABLE_WORKER", raw.get("enable_worker", True)), True)
+    worker_interval_seconds = float(os.environ.get("SYNC_ROUTER_WORKER_INTERVAL_SECONDS", raw.get("worker_interval_seconds", 1.0)))
 
     return AppConfig(
         host=host,
@@ -45,4 +62,6 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
         shared_secret=shared_secret,
         stable_delay_seconds=stable_delay_seconds,
         dedupe_window_seconds=dedupe_window_seconds,
+        enable_worker=enable_worker,
+        worker_interval_seconds=worker_interval_seconds,
     )

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import asyncio
+import logging
+from contextlib import suppress
 from pathlib import Path
 from dataclasses import asdict
 
@@ -10,13 +13,18 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .config import AppConfig, load_config
 from .database import open_database
+from .file_stability import FileStabilityTracker
 from .logging_config import configure_logging
 from .models import FileEvent
 from .path_utils import ensure_within_root
 from .provider import ProviderRegistry
 from .queue_service import QueueService, queue_items_from_iterable
+from .queue_worker import QueueWorker
 from .rule_engine import classify_event
 from .security import require_authorized_request
+
+
+logger = logging.getLogger(__name__)
 
 
 class FileEventPayload(BaseModel):
@@ -38,6 +46,8 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
     connection = open_database(config.database_path)
     queue_service = QueueService(connection, dedupe_window_seconds=config.dedupe_window_seconds)
     provider = ProviderRegistry(provider_mode=config.provider_mode).create()
+    stability_tracker = FileStabilityTracker(stable_delay_seconds=config.stable_delay_seconds)
+    queue_worker = QueueWorker(queue_service, provider, stability_tracker)
 
     app = FastAPI(title="vscode-onedrive-sync-router")
     app.add_middleware(
@@ -52,6 +62,41 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
     app.state.connection = connection
     app.state.queue_service = queue_service
     app.state.provider = provider
+    app.state.queue_worker = queue_worker
+    app.state.worker_stop_event = None
+    app.state.worker_task = None
+
+    @app.on_event("startup")
+    async def startup_worker() -> None:
+        if not app.state.config.enable_worker:
+            return
+
+        stop_event: asyncio.Event = asyncio.Event()
+        app.state.worker_stop_event = stop_event
+
+        async def worker_loop() -> None:
+            while not stop_event.is_set():
+                try:
+                    app.state.queue_worker.run_once()
+                except Exception:
+                    logger.exception("Queue worker loop failed")
+
+                try:
+                    await asyncio.wait_for(stop_event.wait(), timeout=app.state.config.worker_interval_seconds)
+                except asyncio.TimeoutError:
+                    continue
+
+        app.state.worker_task = asyncio.create_task(worker_loop())
+
+    @app.on_event("shutdown")
+    async def shutdown_worker() -> None:
+        stop_event: asyncio.Event | None = app.state.worker_stop_event
+        task: asyncio.Task[None] | None = app.state.worker_task
+        if stop_event is not None:
+            stop_event.set()
+        if task is not None:
+            with suppress(asyncio.CancelledError):
+                await task
 
     def get_queue_service() -> QueueService:
         return app.state.queue_service
