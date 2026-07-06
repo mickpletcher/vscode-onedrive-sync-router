@@ -1,4 +1,33 @@
-# Byte-compiled / optimized / DLL files
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# SQLite / local state
+.state/
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / VS Code extension
+node_modules/
+dist/
+out/
+coverage/
+*.vsix
+
+# Logs
+*.log
+
+# Misc
+*.tmp# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class

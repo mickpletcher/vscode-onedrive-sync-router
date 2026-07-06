@@ -1,0 +1,10 @@
+{
+  "project_name": "vscode-onedrive-sync-router",
+  "host": "127.0.0.1",
+  "port": 8765,
+  "database_path": ".state/sync-router.sqlite3",
+  "provider_mode": "dry-run",
+  "shared_secret": "",
+  "stable_delay_seconds": 2,
+  "dedupe_window_seconds": 15
+}

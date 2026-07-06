@@ -1,0 +1,58 @@
+{
+  "name": "vscode-onedrive-sync-router",
+  "displayName": "VS Code OneDrive Sync Router",
+  "description": "A local-first VS Code extension and sync routing agent that reduces OneDrive file sync conflict risk by queuing, deduping, classifying, and safely routing VS Code file activity.",
+  "version": "0.1.0",
+  "publisher": "github",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-onedrive-sync-router.refreshStatus",
+        "title": "vscode-onedrive-sync-router: Refresh Status"
+      },
+      {
+        "command": "vscode-onedrive-sync-router.showQueue",
+        "title": "vscode-onedrive-sync-router: Show Queue"
+      },
+      {
+        "command": "vscode-onedrive-sync-router.openLogs",
+        "title": "vscode-onedrive-sync-router: Open Logs"
+      }
+    ],
+    "configuration": {
+      "title": "vscode-onedrive-sync-router",
+      "properties": {
+        "vscode-onedrive-sync-router.agentUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8765",
+          "description": "Local agent URL for vscode-onedrive-sync-router."
+        },
+        "vscode-onedrive-sync-router.sharedSecret": {
+          "type": "string",
+          "default": "",
+          "description": "Optional shared secret for the local agent."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "check": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.5.4"
+  }
+}
