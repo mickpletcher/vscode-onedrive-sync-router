@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import os
+
 from fastapi import HTTPException, Request, status
 
-LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost", "testclient"}
+LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost"}
 TOKEN_HEADER = "X-Sync-Router-Token"
 
 
 def is_local_request(request: Request) -> bool:
     client = request.client.host if request.client else None
+    if client == "testclient":
+        # FastAPI TestClient uses "testclient" as host.
+        return os.getenv("PYTEST_CURRENT_TEST") is not None
     return client in LOCAL_HOSTS
 
 

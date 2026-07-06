@@ -41,3 +41,14 @@ def test_non_local_request_is_rejected():
         assert exc.status_code == 403
     else:
         raise AssertionError("Expected local-only rejection")
+
+
+def test_testclient_host_rejected_outside_pytest_context(monkeypatch):
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    request = make_request(client_host="testclient")
+    try:
+        require_authorized_request(request, "")
+    except HTTPException as exc:
+        assert exc.status_code == 403
+    else:
+        raise AssertionError("Expected local-only rejection")
