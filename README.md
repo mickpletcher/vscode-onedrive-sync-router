@@ -1,5 +1,8 @@
 # vscode-onedrive-sync-router
 
+> **Status: Under construction. Not ready for use.**
+> This project is actively being built out and has known gaps between documented behavior and current implementation. Do not rely on it for real OneDrive workspaces yet.
+
 A local-first VS Code extension and sync routing agent that reduces OneDrive file sync conflict risk by queuing, deduping, classifying, and safely routing VS Code file activity.
 
 ## Architecture
